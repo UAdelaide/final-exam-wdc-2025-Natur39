@@ -35,20 +35,37 @@ router.get('/me', (req, res) => {
   res.json(req.session.user);
 });
 
+router.get('/me/dogs', async (req, res) => {
+  if (!req.session.user || !req.session.user.user_id) {
+    return res.status(401).json({ error: 'Invalid session' });
+  }
+  try {
+    const userId = req.session.user.user_id;
+    const [rows] = await db.query(`
+        SELECT dog_id, name, size
+        FROM Dogs
+        WHERE owner_id = ?
+      `, [userId]);
+    res.json(rows);
+  } catch (error) {
+    console.error('Dog fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch dogs' });
+  }
+});
 // POST login (dummy version)
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   try {
     const [rows] = await db.query(`
       SELECT user_id, username, role FROM Users
-      WHERE email = ? AND password_hash = ?
-    `, [email, password]);
+      WHERE username = ? AND password_hash = ?
+    `, [username, password]);
 
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-
+    req.session.user = rows[0];
     res.json({ message: 'Login successful', user: rows[0] });
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });
