@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>dog of the day</title>
+    <script src="https://unpkg.com/vue@3"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, green, yellow, gray, blue, white, black);
+        }
+
+        button {
+            font-size: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="dog">
+        <button @click="fetch" type="button">
+            123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123
+        </button>
+        <div v-if="dogImage">
+            <img :src="dogImage" alt="dog of the day">
+        </div>
+    </div>
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    dogImage: null
+                }
+            },
+            methods: {
+                fetch() {
+                    fetch('https://dog.ceo/api/breeds/image/random')
+                        .then(response => response.json())
+                        .then(data => {
+                            this.dogImage = data.message;
+                        });
+                }
+            }
+        }).mount('#dog');
+    </script>
+</body>
+
+</html>
