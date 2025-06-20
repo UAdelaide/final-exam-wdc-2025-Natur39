@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Walker Dashboard - Dog Walking Service</title>
@@ -7,10 +8,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
+
 <body class="bg-light">
   <div id="app" class="container py-4">
-    <h1 class="mb-4 text-success">Walker Dashboard</h1>
-
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="mb-4 text-success">Walker Dashboard</h1>
+      <button @click="logout" type="button" class="btn btn-danger">Logout</button>
+    </div>
     <!-- Alert messages -->
     <div v-if="message" class="alert alert-info">{{ message }}</div>
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -43,7 +47,7 @@
         const walks = ref([]);
         const message = ref('');
         const error = ref('');
-        const user = 3;
+        const user = ref(null);
 
         async function loadWalkRequests() {
           try {
@@ -52,6 +56,36 @@
             walks.value = await res.json();
           } catch (err) {
             error.value = err.message;
+          }
+        }
+
+        async function logout() {
+          try {
+            const res = await fetch('/logout', {
+              method: 'POST',
+              credentials: 'include'
+            });
+
+            if (res.redirected) {
+              window.location.href = res.url;
+            }
+            else {
+              window.location.href = '/index.html';
+            }
+          } catch (err) {
+            console.error('Logout error:', err);
+            window.location.href = '/index.html';
+          }
+        }
+
+        async function loadUser() {
+          try {
+            const res = await fetch('/api/users/me');
+            if (!res.ok) throw new Error('Failed to load user information');
+            user.value = await res.json();
+          } catch (err) {
+            error.value = 'Failed to load user infor';
+            console.error('load error:', err);
           }
         }
 
@@ -74,15 +108,17 @@
           }
         }
 
-        onMounted(() => {
-          loadWalkRequests();
+        onMounted(async () => {
+          await loadUser();
+          await loadWalkRequests();
         });
 
         return {
           walks,
           message,
           error,
-          applyToWalk
+          applyToWalk,
+          logout
         };
       }
     }).mount('#app');
@@ -90,4 +126,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
