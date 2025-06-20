@@ -10,6 +10,14 @@ CREATE TABLE Users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+INSERT INTO Users (username, email, password_hash, role)
+VALUES
+('alice123', 'alice@example.com', 'hashed123', 'owner'),
+('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
+('carol123', 'carol@example.com', 'hashed789', 'owner'),
+('jason111', 'jason@example.com', 'hashed111', 'owner'),
+('alen111', 'alen@example.com', 'hashed222', 'owner');
+
 CREATE TABLE Dogs (
     dog_id INT AUTO_INCREMENT PRIMARY KEY,
     owner_id INT NOT NULL,
@@ -17,6 +25,14 @@ CREATE TABLE Dogs (
     size ENUM('small', 'medium', 'large') NOT NULL,
     FOREIGN KEY (owner_id) REFERENCES Users(user_id)
 );
+
+INSERT INTO Dogs (name, size, owner_id)
+VALUES
+('Max', 'medium', (SELECT user_id FROM Users WHERE username = 'alice123')),
+('Bella', 'small', (SELECT user_id FROM Users WHERE username = 'carol123')),
+('Bob', 'small', (SELECT user_id FROM Users WHERE username = 'bobwalker')),
+('Jason', 'small', (SELECT user_id FROM Users WHERE username = 'jason111')),
+('Alen', 'small', (SELECT user_id FROM Users WHERE username = 'alen111'));
 
 CREATE TABLE WalkRequests (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,6 +44,14 @@ CREATE TABLE WalkRequests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (dog_id) REFERENCES Dogs(dog_id)
 );
+
+INSERT INTO WalkRequests (dog_id, requested_time, duration_minutes, location, status)
+VALUES
+((SELECT dog_id FROM Dogs WHERE name = 'Max'), '2025-06-10 08:00:00', 30, 'Parklands', 'open'),
+((SELECT dog_id FROM Dogs WHERE name = 'Bella'), '2025-06-10 09:30:00', 45, 'Beachside Ave', 'accepted'),
+((SELECT dog_id FROM Dogs WHERE name = 'Bob'), '2025-06-10 09:30:00', 45, 'Park', 'open'),
+((SELECT dog_id FROM Dogs WHERE name = 'Jason'), '2025-06-10 09:30:00', 45, 'Park', 'open'),
+((SELECT dog_id FROM Dogs WHERE name = 'Alen'), '2025-06-10 09:30:00', 30, 'Car', 'open');
 
 CREATE TABLE WalkApplications (
     application_id INT AUTO_INCREMENT PRIMARY KEY,
